@@ -3,7 +3,7 @@
 	left: 0;
 	width: 616px;
 	height: 100%;
-	overflow: scroll;
+	overflow: auto;
 	background-color: #ffffff;
 	border-right: 1px solid #000000;
 	transform: translate(-616px);
@@ -20,11 +20,10 @@
 	flex-direction: column;
 	gap: 50px;
 	box-sizing: border-box;
-	min-width: 100%;
+	width: 100%;
 	height: auto;
 	min-height: 100%;
 	padding: 50px 31px;
-	overflow: visible;
 }
 
 .bottomContainer {

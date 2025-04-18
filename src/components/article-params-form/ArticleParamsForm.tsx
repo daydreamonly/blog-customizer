@@ -2,7 +2,7 @@ import { ArrowButton } from 'src/ui/arrow-button';
 
 import styles from './ArticleParamsForm.module.scss';
 import clsx from 'clsx';
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
 	ArticleStateType,
 	backgroundColors,
@@ -21,13 +21,13 @@ import { Button } from 'src/ui/button';
 import { useCloseHandler } from './hooks/useCloseHandler';
 
 type TArticleParamsFormProps = {
-	onConfirm: (state: ArticleStateType) => void;
-	onReset: () => void;
+	setArticleCurrentState: React.Dispatch<
+		React.SetStateAction<ArticleStateType>
+	>;
 };
 
 export const ArticleParamsForm = ({
-	onConfirm,
-	onReset,
+	setArticleCurrentState,
 }: TArticleParamsFormProps) => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 	const [articleFormState, setArticleFormState] = useState(defaultArticleState);
@@ -47,12 +47,12 @@ export const ArticleParamsForm = ({
 
 	const clearHandler = () => {
 		setArticleFormState(defaultArticleState);
-		onReset();
+		setArticleCurrentState(defaultArticleState);
 	};
 
 	const confirmHandler = (event: React.FormEvent) => {
 		event.preventDefault();
-		onConfirm(articleFormState);
+		setArticleCurrentState(articleFormState);
 	};
 
 	return (
@@ -68,7 +68,12 @@ export const ArticleParamsForm = ({
 					className={styles.form}
 					onSubmit={confirmHandler}
 					onReset={clearHandler}>
-					<Text size={31} weight={800} uppercase={true} family='open-sans'>
+					<Text
+						size={31}
+						weight={800}
+						uppercase={true}
+						family='open-sans'
+						as={'h2'}>
 						Задайте параметры
 					</Text>
 					<Select
