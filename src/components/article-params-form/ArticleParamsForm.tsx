@@ -2,75 +2,110 @@ import { ArrowButton } from 'src/ui/arrow-button';
 
 import styles from './ArticleParamsForm.module.scss';
 import clsx from 'clsx';
-import { ReactNode, useEffect, useRef } from 'react';
+import { useRef, useState } from 'react';
+import {
+	ArticleStateType,
+	backgroundColors,
+	contentWidthArr,
+	defaultArticleState,
+	fontColors,
+	fontFamilyOptions,
+	fontSizeOptions,
+	OptionType,
+} from 'src/constants/articleProps';
+import { Text } from 'src/ui/text';
+import { Select } from 'src/ui/select';
+import { RadioGroup } from 'src/ui/radio-group';
+import { Separator } from 'src/ui/separator';
+import { Button } from 'src/ui/button';
+import { useCloseHandler } from './hooks/useCloseHandler';
 
-export type TArticleParamsFormChildren = {
-	formTitle: ReactNode;
-	fontSelector: ReactNode;
-	fontSizeSelector: ReactNode;
-	fontColorSelector: ReactNode;
-	separator: ReactNode;
-	backgroundColor: ReactNode;
-	widthContent: ReactNode;
-	resetButton: ReactNode;
-	confirmButton: ReactNode;
+type TArticleParamsFormProps = {
+	onConfirm: (state: ArticleStateType) => void;
+	onReset: () => void;
 };
 
-export type TArticleParamsForm = {
-	isOpen: boolean;
-	onClick: () => void;
-	children: TArticleParamsFormChildren;
-};
+export const ArticleParamsForm = ({
+	onConfirm,
+	onReset,
+}: TArticleParamsFormProps) => {
+	const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+	const [articleFormState, setArticleFormState] = useState(defaultArticleState);
+	const sidebarRef = useRef<HTMLElement>(null);
 
-export const ArticleParamsForm = (props: TArticleParamsForm) => {
-	const { isOpen, onClick } = props;
-	const {
-		formTitle,
-		fontSelector,
-		fontSizeSelector,
-		fontColorSelector,
-		separator,
-		backgroundColor,
-		widthContent,
-		resetButton,
-		confirmButton,
-	} = props.children;
-	const asideRef = useRef<HTMLElement>(null);
+	const sidebarOpenHandler = () => {
+		setIsSidebarOpen((prev) => !prev);
+	};
+	useCloseHandler({ isSidebarOpen, sidebarOpenHandler, sidebarRef });
 
-	useEffect(() => {
-		if (!isOpen) return;
+	const formStateHandler = (key: keyof ArticleStateType, value: OptionType) => {
+		setArticleFormState((prev) => ({
+			...prev,
+			[key]: value,
+		}));
+	};
 
-		const handleClickOutside = (event: MouseEvent) => {
-			const { target } = event;
-			if (target instanceof Node && !asideRef.current?.contains(target)) {
-				onClick();
-			}
-		};
+	const clearHandler = () => {
+		setArticleFormState(defaultArticleState);
+		onReset();
+	};
 
-		document.addEventListener('mousedown', handleClickOutside);
-
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, [isOpen, onClick]);
+	const confirmHandler = (event: React.FormEvent) => {
+		event.preventDefault();
+		onConfirm(articleFormState);
+	};
 
 	return (
 		<>
-			<ArrowButton isOpen={isOpen} onClick={onClick} />
+			<ArrowButton isOpen={isSidebarOpen} onClick={sidebarOpenHandler} />
 			<aside
-				ref={asideRef}
-				className={clsx(styles.container, isOpen && styles.container_open)}>
-				<form className={styles.form}>
-					{formTitle}
-					{fontSelector}
-					{fontSizeSelector}
-					{fontColorSelector}
-					{separator}
-					{backgroundColor}
-					{widthContent}
+				ref={sidebarRef}
+				className={clsx(
+					styles.container,
+					isSidebarOpen && styles.container_open
+				)}>
+				<form
+					className={styles.form}
+					onSubmit={confirmHandler}
+					onReset={clearHandler}>
+					<Text size={31} weight={800} uppercase={true} family='open-sans'>
+						Задайте параметры
+					</Text>
+					<Select
+						selected={articleFormState.fontFamilyOption}
+						options={fontFamilyOptions}
+						onChange={(value) => formStateHandler('fontFamilyOption', value)}
+						title='шрифт'
+					/>
+					<RadioGroup
+						name='размер шрифта'
+						options={fontSizeOptions}
+						selected={articleFormState.fontSizeOption}
+						title='размер шрифта'
+						onChange={(value) => formStateHandler('fontSizeOption', value)}
+					/>
+					<Select
+						title='Цвет шрифта'
+						options={fontColors}
+						selected={articleFormState.fontColor}
+						onChange={(value) => formStateHandler('fontColor', value)}
+					/>
+					<Separator />
+					<Select
+						title='Цвет фона'
+						options={backgroundColors}
+						selected={articleFormState.backgroundColor}
+						onChange={(value) => formStateHandler('backgroundColor', value)}
+					/>
+					<Select
+						title='Ширина контента'
+						options={contentWidthArr}
+						selected={articleFormState.contentWidth}
+						onChange={(value) => formStateHandler('contentWidth', value)}
+					/>
 					<div className={styles.bottomContainer}>
-						{resetButton}
-						{confirmButton}
+						<Button title='Сбросить' htmlType='reset' type='clear' />
+						<Button title='Применить' htmlType='submit' type='apply' />
 					</div>
 				</form>
 			</aside>
